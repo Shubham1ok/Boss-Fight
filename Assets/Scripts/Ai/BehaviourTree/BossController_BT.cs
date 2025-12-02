@@ -16,27 +16,19 @@ public class BossController_BT : MonoBehaviour
     public float maxSpeed = 3.5f;
     public float visionRange = 20f;
     public float visionAngle = 90f;
-    public float hearingRadius = 8f;
+   
     public float meleeRange = 2f;
     public float rangedRange = 15f;
-    // retreatThresholdHP left for backward compat, but we use explicit thresholds below
-    public float retreatThresholdHP = 0.35f;
-
-    // NEW: thresholds & per-wave spawn counts
-    [Header("Retreat Waves")]
-    [Range(0f, 1f)] public float wave1Threshold = 0.5f; // 50%
-    [Range(0f, 1f)] public float wave2Threshold = 0.10f; // 10%
-    public int wave1SpawnCount = 2;
-    public int wave2SpawnCount = 3;
+     
+    public float meleeCooldown = 2f;
+    public int meleeDamage = 10;
+    
+    public float rangedFireRate = 1.0f;
+    public float rangedProjectileSpeed = 18f;
 
     [Header("Minion Spawn Settings")]
     public float minionSpawnRadius = 1.2f;
-
     public int maxMinions = 6;
-    public float meleeCooldown = 2f;
-    public int meleeDamage = 10;
-    public float rangedFireRate = 1.0f;
-    public float rangedProjectileSpeed = 18f;
 
     [Header("Retreat/Wait")]
     [HideInInspector] public bool isWaitingForRejoin = false; // boss is waiting after spawning minions
@@ -47,8 +39,7 @@ public class BossController_BT : MonoBehaviour
     public float maxHP = 100f;
     [SerializeField] private float currentHP = 100f;
     public GameObject deathVFXPrefab;
-    public GameObject lootPrefab;
-    public Transform lootSpawnPoint;
+    
     public bool destroyOnDeath = false;
     public float destroyDelay = 3f;
 
@@ -62,10 +53,7 @@ public class BossController_BT : MonoBehaviour
     [Header("Runtime")]
     public Animator animator;
 
-    // per-wave done flags (so wave triggers only once each)
-    [Header("Internal Wave Flags")]
-    public bool hasRetreatedWave1 = false; // 50% wave done
-    public bool hasRetreatedWave2 = false; // 10% wave done
+    
 
     // public tracking of last spawned projectile (set by SpawnProjectileFromAnimation)
     [HideInInspector] public GameObject activeProjectile = null;
@@ -140,17 +128,8 @@ public class BossController_BT : MonoBehaviour
     {
         Selector rootSel = new Selector("RootSelector");
 
-        // --- Wave 1 (50%) Sequence: low health -> roar+spawn+wait (no move-to-cover)
-        Sequence wave1Seq = new Sequence("Wave1_RetreatAndSummon");
-        var lowHealth50 = new Condition_IsLowHealth(this, blackboard, wave1Threshold, "Cond_LowHp_50");
-        wave1Seq.children.Add(lowHealth50);
-        wave1Seq.children.Add(new Action_SpawnMinions(this, blackboard, wave1SpawnCount, true, "Act_SpawnMinions50")); // spawnCount, markWave1 = true
+        
 
-        // --- Wave 2 (10%) Sequence
-        Sequence wave2Seq = new Sequence("Wave2_RetreatAndSummon");
-        var lowHealth10 = new Condition_IsLowHealth(this, blackboard, wave2Threshold, "Cond_LowHp_10");
-        wave2Seq.children.Add(lowHealth10);
-        wave2Seq.children.Add(new Action_SpawnMinions(this, blackboard, wave2SpawnCount, false, "Act_SpawnMinions10")); // spawnCount, markWave1 = false -> marks wave2
 
         // Melee Sequence
         Sequence meleeSeq = new Sequence("MeleeSequence");
@@ -170,18 +149,15 @@ public class BossController_BT : MonoBehaviour
         rangedAction.turnSpeed = 6f;
         rangedSeq.children.Add(rangedAction);
 
-        // Chase + Patrol
+        // Chase 
         var chase = new Action_ChasePlayer(this, blackboard, "Act_Chase");
-        var patrol = new Action_Patrol(this, blackboard, "Act_Patrol");
+       
 
-        // Order: Wave1 -> Wave2 -> Melee -> Ranged -> Chase -> Patrol
-        rootSel.children.Add(wave1Seq);
-        rootSel.children.Add(wave2Seq);
+        
         rootSel.children.Add(meleeSeq);
         rootSel.children.Add(rangedSeq);
         rootSel.children.Add(chase);
-        rootSel.children.Add(patrol);
-
+       
         root = rootSel;
     }
 
@@ -205,11 +181,7 @@ public class BossController_BT : MonoBehaviour
     {
         if (animator != null) animator.SetTrigger("Die");
         if (deathVFXPrefab != null) Instantiate(deathVFXPrefab, transform.position + Vector3.up * 0.5f, Quaternion.identity);
-        if (lootPrefab != null)
-        {
-            Transform spawn = lootSpawnPoint != null ? lootSpawnPoint : transform;
-            Instantiate(lootPrefab, spawn.position + Vector3.up * 0.5f, Quaternion.identity);
-        }
+       
 
         var cols = GetComponentsInChildren<Collider>();
         foreach (var c in cols) c.enabled = false;
@@ -315,7 +287,6 @@ public class BossController_BT : MonoBehaviour
             "HP: " + currentHP + "/" + maxHP + "\n" +
             "PlayerVisible: " + blackboard.playerVisible + "\n" +
             "Dist to Player: " + Mathf.Round(blackboard.distanceToPlayer * 10f) / 10f + "\n" +
-            "Minions: " + blackboard.currentMinionCount + "\n" +
-            "Wave1Done: " + hasRetreatedWave1 + " Wave2Done: " + hasRetreatedWave2);
+            "Minions: " + blackboard.currentMinionCount + "\n" );
     }
 }

@@ -10,7 +10,7 @@ public class BossSensesDebug : MonoBehaviour
     public Blackboard blackboard;       // optional: assign to read sensors/state
     public Color visionColor = new Color(0.2f, 0.8f, 1f, 0.25f);
     public Color visionArcColor = new Color(0.2f, 0.8f, 1f, 1f);
-    public Color hearingColor = new Color(1f, 0.85f, 0.2f, 0.12f);
+   
     public Color meleeColor = new Color(1f, 0.3f, 0.3f, 0.25f);
     public Color rangedColor = new Color(0.6f, 0.2f, 1f, 0.15f);
     public Color coverColor = new Color(0.4f, 1f, 0.4f, 0.3f);
@@ -41,10 +41,10 @@ public class BossSensesDebug : MonoBehaviour
         // Draw hearing radius as transparent sphere
         if (boss != null)
         {
-            Gizmos.color = hearingColor;
-            Gizmos.DrawSphere(t.position, boss.hearingRadius);
+           
+            
             Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(t.position, boss.hearingRadius);
+           
         }
 
         // Draw melee range
@@ -98,18 +98,7 @@ public class BossSensesDebug : MonoBehaviour
             }
         }
 
-        // draw cover points if blackboard has them
-        /*if (bb != null && bb.coverPoints != null)
-        {
-            Gizmos.color = coverColor;
-            foreach (var c in bb.coverPoints)
-            {
-                if (c == null) continue;
-                Gizmos.DrawWireSphere(c.position, 0.3f);
-                Gizmos.DrawLine(t.position, c.position);
-            }
-        }*/
-
+        
 #if UNITY_EDITOR
         // Draw labels in Scene view for clarity
         if (showLabels && UnityEditor.SceneView.lastActiveSceneView != null)

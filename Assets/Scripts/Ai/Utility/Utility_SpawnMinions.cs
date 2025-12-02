@@ -39,8 +39,7 @@ public class Utility_SpawnMinions : UtilityAction
         float hpFraction = bb.currentHP / bb.maxHP;
         if (hpFraction <= preferBossHpBelow) score += 0.5f;
 
-        // more urgent if minion count is low
-        if (bb.currentMinionCount <= preferLessThan) score += 0.4f;
+       
 
         // small random to vary decisions
         score += Random.Range(0f, 0.2f);
@@ -52,9 +51,7 @@ public class Utility_SpawnMinions : UtilityAction
     {
         if (controller == null || boss == null || bb == null) return;
 
-        // spawn using boss's existing logic if available, otherwise manual
-        // We will try to call boss-spawn behavior if it has a public method; otherwise spawn directly
-        // Here we manually spawn to be safe.
+        
 
         int available = Mathf.Max(0, boss.maxMinions - bb.currentMinionCount);
         int toSpawn = Mathf.Min(spawnCount, available);
@@ -86,7 +83,7 @@ public class Utility_SpawnMinions : UtilityAction
 
         // start invulnerability until minions gone
         boss.StartInvulnerabilityUntilMinionsGone(0f);
-        boss.DoRoarAndWait(Random.Range(boss.minWaitAfterRoar, boss.maxWaitAfterRoar));
+        
 
         MarkExecuted();
     }
